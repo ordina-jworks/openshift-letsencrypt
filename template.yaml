@@ -3,8 +3,17 @@ kind: Template
 metadata:
   name: letsencrypt
 objects:
-- apiVersion: v1
-  kind: DeploymentConfig
+- kind: PersistentVolumeClaim
+  metadata:
+    name: "letsencrypt-claim-${PROJECT}"
+  spec:
+    accessModes:
+      - "ReadWriteOnce"
+    resources:
+      requests:
+        storage: "1Gi"
+- kind: DeploymentConfig
+  apiVersion: v1
   metadata:
     labels:
       app: letsencrypt
@@ -78,12 +87,13 @@ objects:
         - secret:
             secretName: letsencrypt-creds
           name: account-creds
-        - emptyDir: {}
-          name: datadir
+        - name: datadir
+          persistentVolumeClaim:
+            claimName: "letsencrypt-claim-${PROJECT}"
     triggers:
     - type: ConfigChange
-- apiVersion: v1
-  kind: Service
+- kind: Service
+  apiVersion: v1
   metadata:
     labels:
       app: letsencrypt
@@ -98,8 +108,8 @@ objects:
       deploymentconfig: letsencrypt
     sessionAffinity: None
     type: ClusterIP
-- apiVersion: v1
-  kind: ServiceAccount
+- kind: ServiceAccount
+  apiVersion: v1
   metadata:
     name: letsencrypt
 parameters:
@@ -110,3 +120,7 @@ parameters:
   name: LETSENCRYPT_CA
   required: true
   value: "https://acme-v01.api.letsencrypt.org/directory"
+- description: Current project name
+  name: PROJECT
+  required: true
+  value: "test"
