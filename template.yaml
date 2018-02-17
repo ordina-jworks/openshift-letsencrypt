@@ -4,6 +4,7 @@ metadata:
   name: letsencrypt
 objects:
 - kind: PersistentVolumeClaim
+  apiVersion: v1
   metadata:
     name: "letsencrypt-claim-${PROJECT}"
   spec:
